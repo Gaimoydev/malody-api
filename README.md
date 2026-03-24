@@ -193,6 +193,7 @@ malody_api/
 - [malody_api (ChuanYuanNotBoat)](https://github.com/ChuanYuanNotBoat/malody_api/) — Malody API 设计参考
 - [Malody](https://malody.mugzone.net/) — 游戏数据来源
 - [baimg](https://img.catcdn.cn/) — 背景图床
+- AI Agent：Claude Gemini
 
 ## License
 
