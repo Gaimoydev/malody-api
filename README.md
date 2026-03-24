@@ -41,6 +41,9 @@
 | 玩家 / 谱面搜索 | ✅ | — | 关键词模糊搜索 |
 | 玩家活动记录 | ✅ | — | 最近游玩记录 |
 
+## 关于仓库
+![Alt](https://repobeats.axiom.co/api/embed/b0fb81c6a1cc967195e7eb48dd33ac8082abf8d0.svg "Repobeats analytics image")
+
 ## 快速开始
 
 ```bash
