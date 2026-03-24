@@ -55,7 +55,7 @@ async def render_dashboard(
     draw = ImageDraw.Draw(canvas)
 
     hdr = torus_semibold(18)
-    draw_text(draw, (40, 16), f"powered by MalodyBot // {player.get('name', '?')}", hdr, TEXT_MUTED, anchor="lt")
+    draw_text(draw, (40, 16), f"powered by MalodyApi // {player.get('name', '?')}", hdr, TEXT_MUTED, anchor="lt")
     draw_text(draw, (W - 40, 16), ts, hdr, TEXT_MUTED, anchor="rt")
 
     avatar_size = 100
@@ -155,7 +155,7 @@ async def render_dashboard(
         draw_text(draw, (W // 2, act_y + act_h // 2), "No activity data", torus_semibold(20), TEXT_MUTED, anchor="mm")
 
     ff = torus_semibold(16)
-    draw_text(draw, (40, H - 24), "Malody Dashboard  //  Powered by MalodyBot", ff, TEXT_MUTED, anchor="lt")
+    draw_text(draw, (40, H - 24), "Malody Dashboard  //  Powered by MalodyApi", ff, TEXT_MUTED, anchor="lt")
     draw_text(draw, (W - 40, H - 24), ts, ff, TEXT_MUTED, anchor="rt")
 
     return export_png(canvas) if output_format == "png" else export_jpeg(canvas)

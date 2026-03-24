@@ -26,7 +26,7 @@ async def render_trends(player: dict, modes: List[dict], output_format: str = "j
     draw = ImageDraw.Draw(canvas)
 
     hdr = torus_semibold(18)
-    draw_text(draw, (40, 14), f"MalodyBot // Player Trends — {player.get('name', '?')}", hdr, TEXT_MUTED, anchor="lt")
+    draw_text(draw, (40, 14), f"MalodyApi // Player Trends — {player.get('name', '?')}", hdr, TEXT_MUTED, anchor="lt")
     draw_text(draw, (W - 40, 14), ts, hdr, TEXT_MUTED, anchor="rt")
 
     avatar_size = 90
@@ -70,7 +70,7 @@ async def render_trends(player: dict, modes: List[dict], output_format: str = "j
     _draw_mode_table(canvas, draw, modes, 40, table_y, W - 80, table_h)
 
     ff = torus_semibold(16)
-    draw_text(draw, (40, H - 24), "Malody Player Trends  //  MalodyBot", ff, TEXT_MUTED, anchor="lt")
+    draw_text(draw, (40, H - 24), "Malody Player Trends  //  MalodyApi", ff, TEXT_MUTED, anchor="lt")
     draw_text(draw, (W - 40, H - 24), ts, ff, TEXT_MUTED, anchor="rt")
 
     return export_jpeg(canvas) if output_format != "png" else export_png(canvas)

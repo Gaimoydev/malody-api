@@ -6,10 +6,9 @@ from ..colors import TEXT_WHITE, TEXT_GRAY, TEXT_MUTED
 from ..renderer import draw_text, get_text_width
 
 
-def draw_header_text(draw: ImageDraw.ImageDraw, width: int, title: str = "Malody Dashboard",
-                     version: str = "v1.0", timestamp: str = ""):
+def draw_header_text(draw: ImageDraw.ImageDraw, width: int, title: str = "Malody Dashboard", timestamp: str = ""):
     font_sm = torus_semibold(22)
-    draw_text(draw, (20, 8), f"powered by MalodyBot {version} // {title}", font_sm, TEXT_GRAY, anchor="lt")
+    draw_text(draw, (20, 8), f"powered by MalodyApi // {title}", font_sm, TEXT_GRAY, anchor="lt")
     if timestamp:
         draw_text(draw, (width - 20, 8), timestamp, font_sm, TEXT_GRAY, anchor="rt")
 

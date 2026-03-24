@@ -8,12 +8,12 @@ from .text import draw_header_text
 
 
 def render_banner(width: int = 1920, height: int = 320, title: str = "Malody Dashboard",
-                  subtitle: str = "", version: str = "v1.0", timestamp: str = "") -> Image.Image:
+                  subtitle: str = "", timestamp: str = "") -> Image.Image:
     banner = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw_gradient_rect(banner, (0, 0, width, height),
                        top_color=(*GRADIENT_BANNER_TOP, 160), bottom_color=(*GRADIENT_BANNER_BOTTOM, 200))
     draw = ImageDraw.Draw(banner)
-    draw_header_text(draw, width, title, version, timestamp)
+    draw_header_text(draw, width, title, timestamp)
 
     title_font = get_text_font(title, 48, bold=True)
     draw.text((width // 2, height // 2 - 10), title, font=title_font, fill=(255, 255, 255, 255), anchor="mm")

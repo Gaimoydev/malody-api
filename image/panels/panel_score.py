@@ -126,7 +126,7 @@ async def render_score_panel(
 
     hdr = torus_semibold(18)
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    draw_text(draw, (40, 16), "powered by MalodyBot v1.0 // Score", hdr, (200, 200, 200, 200), anchor="lt")
+    draw_text(draw, (40, 16), "powered by MalodyApi // Score", hdr, (200, 200, 200, 200), anchor="lt")
     draw_text(draw, (W - 40, 16), f"score: {time_str}  //  req: {now}", hdr, (200, 200, 200, 200), anchor="rt")
 
     idx_w, idx_h = 240, 56

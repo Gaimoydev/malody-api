@@ -44,7 +44,7 @@ async def render_card_list(players: List[dict], mode: int = 0, title: str = "",
     draw = ImageDraw.Draw(canvas)
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     hdr = torus_semibold(20)
-    draw_text(draw, (20, 10), f"powered by MalodyBot v1.0 // {title}", hdr, TEXT_GRAY, anchor="lt")
+    draw_text(draw, (20, 10), f"powered by MalodyApi // {title}", hdr, TEXT_GRAY, anchor="lt")
     draw_text(draw, (PANEL_WIDTH - 20, 10), ts, hdr, TEXT_GRAY, anchor="rt")
 
     tf = get_text_font(title, 42, bold=True)
