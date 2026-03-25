@@ -7,6 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 
 def create_app() -> FastAPI:
@@ -65,11 +66,17 @@ def register_routers(app: FastAPI):
     app.include_router(api_router)
 
 
+def mount_static(app: FastAPI):
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "temp")
+    os.makedirs(static_dir, exist_ok=True)
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+
 def main():
     _ensure_import_paths()
-    os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "static"), exist_ok=True)
     app = create_app()
     register_routers(app)
+    mount_static(app)
     uvicorn.run(app, host="0.0.0.0", port=8080, log_level="info")
 
 

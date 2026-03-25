@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Request
 from fastapi.responses import Response, JSONResponse
 
 from malody_client import MalodyClient, MODE_NAMES
+from utils.temp_image import save_temp_image_url_payload
 from image.panels.panel_card_list import render_card_list
 from image.panels.panel_dashboard import render_dashboard
 from image.panels.panel_score import render_score_panel
@@ -32,6 +33,12 @@ def _err(message: str, code: int = 400):
     })
 
 
+def _image_or_url(request: Request, img_bytes: bytes, fmt: str, is_url: bool, img_url_time: int):
+    if not is_url:
+        return Response(content=img_bytes, media_type=f"image/{fmt}")
+    return _ok(save_temp_image_url_payload(request, img_bytes, fmt, img_url_time), "图片临时 URL")
+
+
 def _parse_cid(cid_str: str) -> int:
     cleaned = cid_str.strip().lower().lstrip("c")
     try:
@@ -56,10 +63,14 @@ async def get_rankings(mode: int = Query(0, ge=0, le=9), limit: int = Query(50, 
 
 
 @router.get("/rankings/image")
-async def get_rankings_image(mode: int = Query(0, ge=0, le=9), limit: int = Query(20, ge=1, le=50), fmt: str = Query("jpeg")):
+async def get_rankings_image(
+    request: Request,
+    mode: int = Query(0, ge=0, le=9), limit: int = Query(20, ge=1, le=50), fmt: str = Query("jpeg"),
+    is_url: bool = Query(False), img_url_time: int = Query(300, ge=1, le=604800),
+):
     players = await client.get_rankings(mode)
     img = await render_card_list(players=players[:limit], mode=mode, output_format=fmt)
-    return Response(content=img, media_type=f"image/{fmt}")
+    return _image_or_url(request, img, fmt, is_url, img_url_time)
 
 
 @router.get("/ranking/global")
@@ -71,13 +82,17 @@ async def get_global_ranking(mode: str = Query("key"), mm: int = Query(1, ge=0, 
 
 
 @router.get("/ranking/global/image")
-async def get_global_ranking_image(mode: str = Query("key"), mm: int = Query(1, ge=0, le=1), limit: int = Query(40, ge=1, le=50), fmt: str = Query("jpeg")):
+async def get_global_ranking_image(
+    request: Request,
+    mode: str = Query("key"), mm: int = Query(1, ge=0, le=1), limit: int = Query(40, ge=1, le=50), fmt: str = Query("jpeg"),
+    is_url: bool = Query(False), img_url_time: int = Query(300, ge=1, le=604800),
+):
     mode_id = _resolve_mode(mode)
     players = await client.get_global_rankings(mode=mode_id, mm=mm, limit=limit)
     rank_type = "MM" if mm else "EXP"
     title = f"Malody {MODE_NAMES.get(mode_id, '?')} Global Ranking ({rank_type})"
     img = await render_card_list(players=players, mode=mode_id, title=title, output_format=fmt)
-    return Response(content=img, media_type=f"image/{fmt}")
+    return _image_or_url(request, img, fmt, is_url, img_url_time)
 
 
 @router.get("/player/{identifier}")
@@ -90,7 +105,11 @@ async def get_player_info(identifier: str):
 
 
 @router.get("/player/{identifier}/image")
-async def get_player_image(identifier: str, mode: str = Query(""), fmt: str = Query("jpeg")):
+async def get_player_image(
+    request: Request,
+    identifier: str, mode: str = Query(""), fmt: str = Query("jpeg"),
+    is_url: bool = Query(False), img_url_time: int = Query(300, ge=1, le=604800),
+):
     try:
         data = await client.get_player_info(identifier)
         activities = await client.get_player_activity(identifier, 30)
@@ -110,7 +129,7 @@ async def get_player_image(identifier: str, mode: str = Query(""), fmt: str = Qu
         "gold": data.get("gold", 0), "play_time": data.get("play_time", ""),
         "wiki": data.get("wiki", ""), "activities": activities,
     }, mode=mode_id, output_format=fmt)
-    return Response(content=img, media_type=f"image/{fmt}")
+    return _image_or_url(request, img, fmt, is_url, img_url_time)
 
 
 @router.get("/player/{identifier}/activity")
@@ -136,7 +155,11 @@ async def get_chart_scores(cid_str: str, limit: int = Query(30, ge=1, le=100)):
 
 
 @router.get("/chart/{cid_str}/image")
-async def get_chart_scores_image(cid_str: str, limit: int = Query(30, ge=1, le=50), fmt: str = Query("jpeg")):
+async def get_chart_scores_image(
+    request: Request,
+    cid_str: str, limit: int = Query(30, ge=1, le=50), fmt: str = Query("jpeg"),
+    is_url: bool = Query(False), img_url_time: int = Query(300, ge=1, le=604800),
+):
     cid = _parse_cid(cid_str)
     data = await client.get_chart_scores(cid, limit)
     scores, chart_info = data.get("scores", []), data.get("chart", {})
@@ -155,7 +178,7 @@ async def get_chart_scores_image(cid_str: str, limit: int = Query(30, ge=1, le=5
 
     display_title = f"{chart_title} Lv.{level}" if level else chart_title
     img = await render_card_list(players=players, mode=0, title=display_title, cover_url=chart_info.get("cover_url", ""), output_format=fmt)
-    return Response(content=img, media_type=f"image/{fmt}")
+    return _image_or_url(request, img, fmt, is_url, img_url_time)
 
 
 @router.get("/chart/{cid_str}/player/{identifier}")
@@ -171,7 +194,11 @@ async def get_player_chart_score(cid_str: str, identifier: str):
 
 
 @router.get("/chart/{cid_str}/player/{identifier}/image")
-async def get_player_chart_score_image(cid_str: str, identifier: str, fmt: str = Query("jpeg")):
+async def get_player_chart_score_image(
+    request: Request,
+    cid_str: str, identifier: str, fmt: str = Query("jpeg"),
+    is_url: bool = Query(False), img_url_time: int = Query(300, ge=1, le=604800),
+):
     cid = _parse_cid(cid_str)
     try:
         player_data = await client.get_player_info(identifier)
@@ -190,7 +217,7 @@ async def get_player_chart_score_image(cid_str: str, identifier: str, fmt: str =
         cover_url=chart_meta.get("cover_url", ""),
         chart_meta=chart_meta, player_data=player_data, output_format=fmt,
     )
-    return Response(content=img, media_type=f"image/{fmt}")
+    return _image_or_url(request, img, fmt, is_url, img_url_time)
 
 
 @router.get("/charts/search")
@@ -214,7 +241,11 @@ async def get_player_trends(identifier: str, mode: str = Query("")):
 
 
 @router.get("/analytics/player-trends/{identifier}/image")
-async def get_player_trends_image(identifier: str, mode: str = Query(""), fmt: str = Query("jpeg")):
+async def get_player_trends_image(
+    request: Request,
+    identifier: str, mode: str = Query(""), fmt: str = Query("jpeg"),
+    is_url: bool = Query(False), img_url_time: int = Query(300, ge=1, le=604800),
+):
     try:
         data = await client.get_player_info(identifier)
     except Exception as e:
@@ -229,4 +260,4 @@ async def get_player_trends_image(identifier: str, mode: str = Query(""), fmt: s
                 "play_time": data.get("play_time", "")},
         modes=modes, output_format=fmt,
     )
-    return Response(content=img, media_type=f"image/{fmt}")
+    return _image_or_url(request, img, fmt, is_url, img_url_time)

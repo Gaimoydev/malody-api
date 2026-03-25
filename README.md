@@ -59,21 +59,47 @@ python run.py
 
 所有端点以 `/api` 为前缀。图片端点默认输出 JPEG，可通过 `fmt=png` 切换。
 
+### 图片临时 URL
+
+以下 **以 `/image` 结尾** 的接口均支持：
+
+| 参数 | 类型 | 默认 | 说明 |
+|:-----|:-----|:-----|:-----|
+| `is_url` | bool | `false` | 为 `true` 时不直接返回图片二进制，而是将图片写入 `static/temp/` 并返回可访问的 URL |
+| `img_url_time` | int | `300` | 临时文件保留时间（秒），到期后自动删除；范围 `1`～`604800`（7 天） |
+
+生成的 URL 形如：`http://{主机}:{端口}/static/{随机文件名}.jpg`（扩展名与 `fmt` 一致）。主机与端口由当前请求的 `Host`/`scheme` 决定；若服务在反向代理或公网 IP 与监听地址不一致，请设置环境变量 **`PUBLIC_BASE_URL`**（例如 `http://203.0.113.1:8080`），返回的 `url` 将使用此前缀。
+
+`is_url=true` 时的 JSON 响应示例：
+
+```json
+{
+  "success": true,
+  "data": {
+    "url": "http://203.0.113.1:8080/static/a1b2c3d4e5f6.jpg",
+    "expires_in_seconds": 300,
+    "expires_at": "2026-03-25T12:05:00.000000Z"
+  },
+  "message": "图片临时 URL",
+  "timestamp": "2026-03-25T12:00:00.000000"
+}
+```
+
 ### 排行榜
 
 | 端点 | 说明 | 主要参数 |
 |:-----|:-----|:---------|
 | `GET /api/rankings` | 网页排行榜（备用） | `mode` 模式 (0-9)，`limit` 数量 (1-200) |
-| `GET /api/rankings/image` | 网页排行榜图片 | 同上 + `fmt` |
+| `GET /api/rankings/image` | 网页排行榜图片 | 同上 + `fmt` + `is_url` + `img_url_time` |
 | `GET /api/ranking/global` | 全局排行榜 | `mode` 模式名/数字，`mm` 0=EXP/1=MM，`limit` (1-100) |
-| `GET /api/ranking/global/image` | 全局排行榜图片 | 同上 + `fmt` |
+| `GET /api/ranking/global/image` | 全局排行榜图片 | 同上 + `fmt` + `is_url` + `img_url_time` |
 
 ### 玩家
 
 | 端点 | 说明 | 主要参数 |
 |:-----|:-----|:---------|
 | `GET /api/player/{identifier}` | 玩家完整信息 | 用户名或 UID |
-| `GET /api/player/{identifier}/image` | 玩家信息看板图片 | `mode` 留空自动选最高排名，`fmt` |
+| `GET /api/player/{identifier}/image` | 玩家信息看板图片 | `mode` 留空自动选最高排名，`fmt`，`is_url`，`img_url_time` |
 | `GET /api/player/{identifier}/activity` | 最近活动记录 | `limit` (1-50) |
 | `GET /api/player/search/{keyword}` | 搜索玩家 | `limit` (1-50) |
 
@@ -82,7 +108,7 @@ python run.py
 | 端点 | 说明 | 主要参数 |
 |:-----|:-----|:---------|
 | `GET /api/analytics/player-trends/{identifier}` | 各模式数据 (JSON) | `mode` 筛选指定模式 |
-| `GET /api/analytics/player-trends/{identifier}/image` | 趋势分析图片 | `mode`，`fmt` |
+| `GET /api/analytics/player-trends/{identifier}/image` | 趋势分析图片 | `mode`，`fmt`，`is_url`，`img_url_time` |
 
 趋势分析图片包含：
 - **能力雷达图** — Rank / Level / Accuracy / Combo / Plays 五维对比
@@ -94,10 +120,12 @@ python run.py
 | 端点 | 说明 | 主要参数 |
 |:-----|:-----|:---------|
 | `GET /api/chart/{cid}` | 谱面成绩排行 | `limit` (1-100)，cid 支持 `c154498` 或 `154498` |
-| `GET /api/chart/{cid}/image` | 谱面排行图片 | `limit`，`fmt` |
+| `GET /api/chart/{cid}/image` | 谱面排行图片 | `limit`，`fmt`，`is_url`，`img_url_time` |
 | `GET /api/chart/{cid}/player/{identifier}` | 指定玩家谱面成绩 | — |
-| `GET /api/chart/{cid}/player/{identifier}/image` | 成绩面板图片 | `fmt` |
+| `GET /api/chart/{cid}/player/{identifier}/image` | 成绩面板图片 | `fmt`，`is_url`，`img_url_time` |
 | `GET /api/charts/search` | 搜索谱面 | `word` 关键词，`mode`，`limit` |
+
+> 以上 6 个「图片」接口均支持 `is_url` / `img_url_time`，详见本节 **图片临时 URL**。
 
 成绩面板图片包含：
 - M5-M0 评级 + Judge 等级 (A-E) + Pro 标识
@@ -153,11 +181,15 @@ python run.py
 
 ```
 malody_api/
-├── run.py                          # 入口
+├── run.py                          # 入口（挂载 /static 临时图片）
 ├── malody_client.py                # Malody API 客户端
 ├── requirements.txt
 ├── routers/
 │   └── api.py                      # 全部 API 路由
+├── utils/
+│   └── temp_image.py               # 临时图片写入与 URL 生成
+├── static/
+│   └── temp/                       # 临时图片目录（git 忽略内容，保留 .gitkeep）
 ├── image/
 │   ├── renderer.py                 # 渲染工具 (背景/渐变/圆角)
 │   ├── colors.py                   # 颜色常量
