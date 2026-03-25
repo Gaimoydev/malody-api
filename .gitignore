@@ -1,0 +1,62 @@
+# 日志文件
+crawler.log
+logs/*
+
+# 数据库文件
+*.db
+*.db-shm
+*.db-wal
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+malody_api/__pycache__/
+malody_api/core/__pycache__/
+malody_api/core/services/__pycache__/
+malody_api/routers/__pycache__/
+malody_api/utils/__pycache__/
+
+# 进度记录文件
+sid_progress.json
+cid_progress.json
+sid_backwards_progress.json
+
+# 输出目录
+viz_output/*
+
+# 编辑器/IDE 配置
+.idea/
+.vs/
+*.swp
+*.swo
+*~
+
+# 备份文件
+*.bak
+
+# 压缩文件
+*.zip
+*.tar
+*.gz
+
+# 文档/临时文件
+sql_changes.md
+*.txt
+players.txt
+mod_mapping.json   # 如果不需要跟踪可以保留，否则移除
+
+# 虚拟环境
+/.venv/
+
+# 临时图片（由 API 生成，可定期清理）
+static/temp/*
+!static/temp/.gitkeep
+
+# 其他
+.malody_stats.py.swp
+crawler_resume.bin
+config.yaml
+controller.log
+global_progress.bin
