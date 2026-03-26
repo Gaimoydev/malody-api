@@ -20,11 +20,13 @@
 <td align="center"><b>玩家信息看板</b></td>
 <td align="center"><b>谱面成绩面板</b></td>
 <td align="center"><b>玩家趋势分析</b></td>
+<td align="center"><b>玩家最近成绩</b></td>
 </tr>
 <tr>
 <td><img src="demo/player_dashboard.png" width="320" /></td>
 <td><img src="demo/score_panel.png" width="320" /></td>
 <td><img src="demo/player_trends.png" width="320" /></td>
+<td><img src="demo/recent_scores.jpg" width="320" /></td>
 </tr>
 </table>
 
@@ -38,6 +40,7 @@
 | 玩家趋势分析 | ✅ | ✅ | 雷达图 + 模式对比 + 数据表格 |
 | 谱面成绩排行 | ✅ | ✅ | Top N 排行卡片列表 |
 | 谱面成绩面板 | ✅ | ✅ | M5-M0 评级 + 判定分布 + 六边形封面 |
+| 玩家最近上榜成绩 | ✅ | ✅ | 最近 15 条动态 + Top30 榜核验（≥3 条才出图） |
 | 玩家 / 谱面搜索 | ✅ | — | 关键词模糊搜索 |
 | 玩家活动记录 | ✅ | — | 最近游玩记录 |
 
@@ -101,7 +104,11 @@ python run.py
 | `GET /api/player/{identifier}` | 玩家完整信息 | 用户名或 UID |
 | `GET /api/player/{identifier}/image` | 玩家信息看板图片 | `mode` 留空自动选最高排名，`fmt`，`is_url`，`img_url_time` |
 | `GET /api/player/{identifier}/activity` | 最近活动记录 | `limit` (1-50) |
+| `GET /api/player/{identifier}/recent-scores` | 最近上榜成绩（JSON） | 固定读取最近 **15** 条动态 |
+| `GET /api/player/{identifier}/recent-scores/image` | 最近上榜成绩图 | `fmt`，`is_url`，`img_url_time`；**有效条数须 >2（至少 3 条）** |
 | `GET /api/player/search/{keyword}` | 搜索玩家 | `limit` (1-50) |
+
+**最近上榜成绩**：`/api/player/activity` 最近 **15** 条 → 解析 `Achieved #N` / `Achieved the top`（视为 #1）与 `/chart/{cid}`；**N>30** 丢弃；`/api/ranking/list` 仅看前 **30** 名，玩家不在榜则丢弃；同谱面只保留较新一条动态。图片需 **>2** 条有效记录。
 
 ### 玩家趋势分析
 
@@ -121,11 +128,11 @@ python run.py
 |:-----|:-----|:---------|
 | `GET /api/chart/{cid}` | 谱面成绩排行 | `limit` (1-100)，cid 支持 `c154498` 或 `154498` |
 | `GET /api/chart/{cid}/image` | 谱面排行图片 | `limit`，`fmt`，`is_url`，`img_url_time` |
-| `GET /api/chart/{cid}/player/{identifier}` | 指定玩家谱面成绩 | — |
+| `GET /api/chart/{cid}/player/{identifier}` | 指定玩家谱面成绩（单条最佳） | — |
 | `GET /api/chart/{cid}/player/{identifier}/image` | 成绩面板图片 | `fmt`，`is_url`，`img_url_time` |
 | `GET /api/charts/search` | 搜索谱面 | `word` 关键词，`mode`，`limit` |
 
-> 以上 6 个「图片」接口均支持 `is_url` / `img_url_time`，详见本节 **图片临时 URL**。
+> 所有「生成图片」的接口均支持 `is_url` / `img_url_time`，详见 **图片临时 URL**。
 
 成绩面板图片包含：
 - M5-M0 评级 + Judge 等级 (A-E) + Pro 标识
@@ -197,6 +204,7 @@ malody_api/
 │   ├── panels/
 │   │   ├── panel_dashboard.py      # 玩家信息看板
 │   │   ├── panel_score.py          # 谱面成绩面板
+│   │   ├── panel_recent_scores.py      # 玩家最近上榜成绩表
 │   │   ├── panel_trends.py         # 趋势分析面板
 │   │   └── panel_card_list.py      # 排行榜卡片列表
 │   └── components/

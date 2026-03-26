@@ -235,6 +235,109 @@ class MalodyClient:
             "fetched_at": datetime.now().isoformat(),
         }
 
+    @staticmethod
+    def parse_chart_cid_from_activity_link(link: str) -> Optional[int]:
+        if not link:
+            return None
+        m = re.search(r"/chart/(\d+)", link)
+        return int(m.group(1)) if m else None
+
+    @staticmethod
+    def parse_achievement_rank_from_msg(msg: str) -> Optional[int]:
+        if not msg:
+            return None
+        if re.search(r"Achieved\s+the\s+top\b", msg, re.I):
+            return 1
+        m = re.search(r"Achieved\s+#(\d+)", msg, re.I)
+        return int(m.group(1)) if m else None
+
+    async def get_player_recent_activity_scores(self, identifier: str) -> Dict[str, Any]:
+        info = await self.get_player_info(identifier)
+        touid = info["uid"]
+        act = await self._api("/api/player/activity", {"touid": touid})
+        raw = act.get("data", [])[:15]
+
+        list_cache: Dict[int, dict] = {}
+        meta_cache: Dict[int, Dict[str, Any]] = {}
+        seen_cid = set()
+        merged: List[Dict[str, Any]] = []
+
+        for a in raw:
+            link = a.get("link", "")
+            msg = a.get("msg", "")
+            cid = self.parse_chart_cid_from_activity_link(link)
+            if cid is None:
+                continue
+            rank_hint = self.parse_achievement_rank_from_msg(msg)
+            if rank_hint is None or rank_hint > 30:
+                continue
+            if cid in seen_cid:
+                continue
+
+            if cid not in list_cache:
+                list_cache[cid] = await self._api("/api/ranking/list", {"cid": cid, "from": 0})
+            list_data = list_cache[cid]
+            rows = list_data.get("data", [])[:30]
+
+            row = None
+            for s in rows:
+                if s.get("uid") == touid:
+                    row = s
+                    break
+            if not row:
+                continue
+
+            if cid not in meta_cache:
+                meta_cache[cid] = await self.get_chart_meta(cid)
+            cm = meta_cache[cid]
+            meta = list_data.get("meta", {}) or {}
+            chart_max = max((x.get("combo", 0) for x in rows), default=0)
+            ts = row.get("time", 0)
+
+            mod_v = row.get("mod", 0)
+            mod_s = "" if mod_v in (None, 0, "0") else str(mod_v)
+
+            entry = {
+                "activity_time": a.get("time", 0),
+                "activity_time_str": datetime.fromtimestamp(a["time"]).strftime("%Y-%m-%d %H:%M") if a.get("time") else "",
+                "activity_msg": msg,
+                "activity_rank_hint": rank_hint,
+                "cid": cid,
+                "chart": {
+                    "cid": list_data.get("cid", cid),
+                    "sid": list_data.get("sid", 0),
+                    "level": meta.get("level", 0),
+                    "title": cm.get("title", "") or f"c{cid}",
+                    "cover_url": cm.get("cover_url", ""),
+                    "creator": cm.get("creator", ""),
+                },
+                "ranking": row.get("ranking", 0),
+                "score": row.get("score", 0),
+                "combo": row.get("combo", 0),
+                "accuracy": round(row.get("acc", 0), 2),
+                "fc": row.get("fc", False),
+                "mod": mod_s,
+                "best": row.get("best", 0),
+                "cool": row.get("cool", 0),
+                "good": row.get("good", 0),
+                "miss": row.get("miss", 0),
+                "time": ts,
+                "time_str": datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M") if ts else "",
+                "chart_max_combo": chart_max,
+            }
+            seen_cid.add(cid)
+            entry["index"] = len(merged) + 1
+            merged.append(entry)
+
+        return {
+            "player": {
+                "uid": touid, "name": info.get("name", identifier),
+                "avatar_url": info.get("avatar_url", f"https://cni.machart.top/avatar/{touid}"),
+            },
+            "scores": merged,
+            "total": len(merged),
+        }
+
     async def get_player_chart_score(self, identifier: str, cid: int) -> Optional[Dict]:
         touid = await self.resolve_player(identifier)
         data = await self._api("/api/ranking/list", {"cid": cid, "from": 0})

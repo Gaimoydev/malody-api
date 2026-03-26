@@ -41,6 +41,8 @@ def create_app() -> FastAPI:
                 "player_image": "/api/player/{name}/image",
                 "chart": "/api/chart/{cid}",
                 "chart_image": "/api/chart/{cid}/image",
+                "player_recent_scores": "/api/player/{name}/recent-scores",
+                "player_recent_scores_image": "/api/player/{name}/recent-scores/image",
                 "player_trends": "/api/analytics/player-trends/{name}/image",
             },
         }

@@ -9,6 +9,7 @@ from image.panels.panel_card_list import render_card_list
 from image.panels.panel_dashboard import render_dashboard
 from image.panels.panel_score import render_score_panel
 from image.panels.panel_trends import render_trends
+from image.panels.panel_recent_scores import render_player_recent_scores_panel
 
 router = APIRouter(prefix="/api", tags=["malody"])
 client = MalodyClient()
@@ -139,6 +140,37 @@ async def get_player_activity(identifier: str, limit: int = Query(15, ge=1, le=5
     except Exception as e:
         return _err(str(e), 404)
     return _ok(activities, f"最近 {len(activities)} 条活动记录")
+
+
+@router.get("/player/{identifier}/recent-scores")
+async def get_player_recent_scores(identifier: str):
+    try:
+        data = await client.get_player_recent_activity_scores(identifier)
+    except Exception as e:
+        return _err(str(e), 404)
+    return _ok(data, f"玩家 {data['player'].get('name', identifier)} 最近上榜 {data['total']} 条")
+
+
+@router.get("/player/{identifier}/recent-scores/image")
+async def get_player_recent_scores_image(
+    request: Request,
+    identifier: str,
+    fmt: str = Query("jpeg"),
+    is_url: bool = Query(False), img_url_time: int = Query(300, ge=1, le=604800),
+):
+    try:
+        data = await client.get_player_recent_activity_scores(identifier)
+    except Exception as e:
+        return _err(str(e), 404)
+    scores = data.get("scores", [])
+    if len(scores) <= 2:
+        return _err("有效成绩不足 3 条（须大于 2 条），无法生成图片", 400)
+
+    img = await render_player_recent_scores_panel(
+        player={"name": data["player"].get("name", identifier), "avatar_url": data["player"].get("avatar_url", "")},
+        scores=scores, output_format=fmt,
+    )
+    return _image_or_url(request, img, fmt, is_url, img_url_time)
 
 
 @router.get("/player/search/{keyword}")
