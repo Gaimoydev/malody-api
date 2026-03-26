@@ -125,6 +125,6 @@ async def render_player_recent_scores_panel(player: dict, scores: list, output_f
 
     foot_y = H - 40
     f_foot = get_text_font("Malody", 16)
-    draw_text(draw, (40, foot_y), "Malody Recent Scores  //  powered by MalodyBot", f_foot, TEXT_MUTED, anchor="lm")
+    draw_text(draw, (40, foot_y), "Malody Recent Scores  //  powered by MalodyApi", f_foot, TEXT_MUTED, anchor="lm")
 
     return export_jpeg(canvas) if output_format != "png" else export_png(canvas)
