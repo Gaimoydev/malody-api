@@ -202,10 +202,26 @@ def draw_progress_bar(draw: ImageDraw.ImageDraw, img: Image.Image, xy: tuple,
         draw.rounded_rectangle((x1, y1, x1 + bar_width, y2), radius=radius, fill=bar_color)
 
 
-def export_jpeg(img: Image.Image, quality: int = 95) -> bytes:
-    rgb = img.convert("RGB")
+def _as_rgb_for_export(img: Image.Image) -> Image.Image:
+    if img.mode == "RGB":
+        return img
+    if img.mode == "RGBA":
+        bg = Image.new("RGB", img.size, BG_PRIMARY[:3])
+        bg.paste(img, mask=img.getchannel("A"))
+        return bg
+    return img.convert("RGB")
+
+
+def export_jpeg(img: Image.Image, quality: int = 98) -> bytes:
+    rgb = _as_rgb_for_export(img)
     buf = io.BytesIO()
-    rgb.save(buf, format="JPEG", quality=quality, optimize=True)
+    rgb.save(
+        buf,
+        format="JPEG",
+        quality=quality,
+        subsampling=0,
+        optimize=True,
+    )
     return buf.getvalue()
 
 

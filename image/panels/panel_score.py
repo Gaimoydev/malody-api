@@ -188,9 +188,10 @@ async def _player_card(canvas, draw, x, y, w, h, name, avatar_url, gc, judge, pr
     area_str = AREA_MAP.get(area, f"Area:{area}") if area else ""
     tag_y = y + 58
     if area_str:
-        aw = get_text_width(area_str, torus_bold(16))
+        af = get_text_font(area_str, 16, bold=True)
+        aw = get_text_width(area_str, af)
         draw.rounded_rectangle((nx, tag_y, nx + aw + 16, tag_y + 24), radius=6, fill=(0, 120, 200, 180))
-        draw_text(draw, (nx + 8, tag_y + 12), area_str, torus_bold(16), TEXT_WHITE, anchor="lm")
+        draw_text(draw, (nx + 8, tag_y + 12), area_str, af, TEXT_WHITE, anchor="lm")
 
     g_rank = mode_stats.get("rank", 0)
     g_grade_rank = mode_stats.get("grade_rank", 0)
@@ -274,7 +275,7 @@ def _statistics_card(draw, canvas, x, y, w, h, chart, max_combo, gc):
         cy = start_y + i * row_gap
         draw.rounded_rectangle((x + 35, cy, x + 85, cy + 28), radius=8, fill=(*clr, 220))
         draw_text(draw, (x + 60, cy + 14), label, torus_bold(14), (20, 20, 20, 255), anchor="mm")
-        draw_text(draw, (x + 105, cy - 4), val, poppins_bold(34), TEXT_WHITE, anchor="lt", max_width=260)
+        draw_text(draw, (x + 105, cy - 4), val, get_text_font(val, 34, bold=True), TEXT_WHITE, anchor="lt", max_width=260)
         if i < len(stats) - 1:
             draw.line([(x + 35, cy + 55), (x + w - 30, cy + 55)], fill=(80, 70, 75, 120), width=1)
 

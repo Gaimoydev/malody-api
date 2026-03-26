@@ -23,11 +23,11 @@ def draw_stat_label(draw: ImageDraw.ImageDraw, xy: tuple, label: str, value: str
                     label_size: int = 18, value_size: int = 28):
     x, y = xy
     draw_text(draw, (x, y), label, torus_semibold(label_size), label_color, anchor="lt")
-    draw_text(draw, (x, y + label_size + 4), value, torus_bold(value_size), value_color, anchor="lt")
+    draw_text(draw, (x, y + label_size + 4), value, get_text_font(value, value_size, bold=True), value_color, anchor="lt")
 
 
 def draw_mode_badge(draw: ImageDraw.ImageDraw, xy: tuple, mode_name: str, color: tuple, font_size: int = 16):
-    font = torus_bold(font_size)
+    font = get_text_font(mode_name, font_size, bold=True)
     tw = get_text_width(mode_name, font)
     x, y = xy
     pad_x, pad_y = 10, 4

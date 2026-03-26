@@ -69,7 +69,7 @@ async def render_player_recent_scores_panel(player: dict, scores: list, output_f
     col = [70, 150, 750, 870, 980, 1100, 1320, 1460, 1600, 1720]
     labels = ["#", "谱面 / Chart", "CID", "榜位", "评级", "分数", "准确率", "Combo", "Mod", "动态时间"]
 
-    f_hdr = get_text_font("测试", 18, bold=True)
+    f_hdr = torus_semibold(18)
     for x, lb in zip(col, labels):
         draw_text(draw, (x, hdr_y + 25), lb, f_hdr, TEXT_MUTED, anchor="lm")
 
@@ -118,7 +118,7 @@ async def render_player_recent_scores_panel(player: dict, scores: list, output_f
         if len(mod_str) > 10:
             mod_str = mod_str[:8] + "…"
         mod_color = (130, 210, 255, 255) if mod != "—" else TEXT_GRAY
-        draw_text(draw, (col[8], y + row_h // 2), mod_str, torus_semibold(18), mod_color, anchor="lm")
+        draw_text(draw, (col[8], y + row_h // 2), mod_str, get_text_font(mod_str, 18), mod_color, anchor="lm")
 
         time_str = s.get("activity_time_str", "")[:16]
         draw_text(draw, (col[9], y + row_h // 2), time_str, torus_semibold(16), TEXT_MUTED, anchor="lm")
