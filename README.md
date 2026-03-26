@@ -56,10 +56,6 @@ python run.py
 
 服务启动于 `http://localhost:8080`，访问 `/docs` 查看 Swagger 交互式文档。
 
-### 字体（避免中文等字符乱码）
-
-绘图时按顺序尝试：**`assets/fonts/` 下阿里巴巴普惠体** → 环境变量 **`MALODY_CJK_FONT`**（指向任意 `.ttf`/`.ttc`）→ **系统字体**（Windows：`msyh.ttc` / `simhei.ttf` 等；macOS：苹方等；Linux：`NotoSansCJK-*.ttc` 等）。以上均不可用时回退项目内的 Torus（不含 CJK，中文可能显示为方框）。建议将完整 CJK 字体放入 `assets/fonts/` 或设置 `MALODY_CJK_FONT`。
-
 ---
 
 ## API 端点
